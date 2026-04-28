@@ -3,7 +3,16 @@ from src.constants import *
 from dataclasses import dataclass
 from datetime import datetime
 
-TIMESTAMP: str = datetime.now().strftime("%m_%d_%Y_%H_%M_%S")
+# ── PIPELINE_TIMESTAMP: reads from env var if set (used by Airflow DAG) ──────
+# When run normally (via app.py), env var is not set → generates fresh timestamp
+# When run via Airflow, each task sets PIPELINE_TIMESTAMP env var so all tasks
+# share the same artifact directory
+TIMESTAMP: str = os.environ.get(
+    'PIPELINE_TIMESTAMP',
+    datetime.now().strftime("%m_%d_%Y_%H_%M_%S")
+)
+# ─────────────────────────────────────────────────────────────────────────────
+
 
 @dataclass
 class TrainingPipelineConfig:
@@ -14,6 +23,7 @@ class TrainingPipelineConfig:
 
 training_pipeline_config: TrainingPipelineConfig = TrainingPipelineConfig()
 
+
 @dataclass
 class DataIngestionConfig:
     data_ingestion_dir: str = os.path.join(training_pipeline_config.artifact_dir, DATA_INGESTION_DIR_NAME)
@@ -21,24 +31,27 @@ class DataIngestionConfig:
     training_file_path: str = os.path.join(data_ingestion_dir, DATA_INGESTION_INGESTED_DIR, TRAIN_FILE_NAME)
     testing_file_path: str = os.path.join(data_ingestion_dir, DATA_INGESTION_INGESTED_DIR, TEST_FILE_NAME)
     train_test_split_ratio: float = DATA_INGESTION_TRAIN_TEST_SPLIT_RATIO
-    collection_name:str = DATA_INGESTION_COLLECTION_NAME
+    collection_name: str = DATA_INGESTION_COLLECTION_NAME
+
 
 @dataclass
 class DataValidationConfig:
     data_validation_dir: str = os.path.join(training_pipeline_config.artifact_dir, DATA_VALIDATION_DIR_NAME)
     validation_report_file_path: str = os.path.join(data_validation_dir, DATA_VALIDATION_REPORT_FILE_NAME)
 
+
 @dataclass
 class DataTransformationConfig:
     data_transformation_dir: str = os.path.join(training_pipeline_config.artifact_dir, DATA_TRANSFORMATION_DIR_NAME)
     transformed_train_file_path: str = os.path.join(data_transformation_dir, DATA_TRANSFORMATION_TRANSFORMED_DATA_DIR,
-                                                    TRAIN_FILE_NAME.replace("csv", "npy"))
+                                                     TRAIN_FILE_NAME.replace("csv", "npy"))
     transformed_test_file_path: str = os.path.join(data_transformation_dir, DATA_TRANSFORMATION_TRANSFORMED_DATA_DIR,
-                                                   TEST_FILE_NAME.replace("csv", "npy"))
+                                                    TEST_FILE_NAME.replace("csv", "npy"))
     transformed_object_file_path: str = os.path.join(data_transformation_dir,
-                                                     DATA_TRANSFORMATION_TRANSFORMED_OBJECT_DIR,
-                                                     PREPROCSSING_OBJECT_FILE_NAME)
-    
+                                                      DATA_TRANSFORMATION_TRANSFORMED_OBJECT_DIR,
+                                                      PREPROCSSING_OBJECT_FILE_NAME)
+
+
 @dataclass
 class ModelTrainerConfig:
     model_trainer_dir: str = os.path.join(training_pipeline_config.artifact_dir, MODEL_TRAINER_DIR_NAME)
@@ -52,16 +65,19 @@ class ModelTrainerConfig:
     _criterion = MIN_SAMPLES_SPLIT_CRITERION
     _random_state = MIN_SAMPLES_SPLIT_RANDOM_STATE
 
+
 @dataclass
 class ModelEvaluationConfig:
     changed_threshold_score: float = MODEL_EVALUATION_CHANGED_THRESHOLD_SCORE
     bucket_name: str = MODEL_BUCKET_NAME
     s3_model_key_path: str = MODEL_FILE_NAME
 
+
 @dataclass
 class ModelPusherConfig:
     bucket_name: str = MODEL_BUCKET_NAME
     s3_model_key_path: str = MODEL_FILE_NAME
+
 
 @dataclass
 class VehiclePredictorConfig:

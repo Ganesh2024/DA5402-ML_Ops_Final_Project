@@ -1,5 +1,13 @@
 artifact/
-
+airflow_venv/
+airflow.cfg
+airflow.db
+airflow-webserver.pid
+standalone_admin_password.txt
+simple_auth_manager_passwords.json.generated
+logs/
+mlflow.db
+mlruns/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
