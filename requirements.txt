@@ -1,3 +1,4 @@
+mlflow
 ipykernel
 pandas
 numpy
